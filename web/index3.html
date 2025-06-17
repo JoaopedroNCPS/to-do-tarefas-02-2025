@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gerenciamento de Tarefas</title>
+    <link rel="stylesheet" href="styles2.css" />
+    <style>
+
+        main {
+            display: flex;
+            gap: 20px;
+        }
+        .task-column {
+            flex: 1;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 8px;
+            min-height: 300px;
+            background: #f9f9f9;
+        }
+        .task {
+            background: white;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+        }
+        .task button {
+            margin-right: 5px;
+            margin-top: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Gerenciamento de Tarefas</h1>
+        <nav>
+            <ul>
+                <a href="index.html">Cadastro de Usuários</a>
+                <a href="index2.html">Cadastro de Tarefas</a>
+                <a href="index3.html">Gerenciar Tarefas</a>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="task-column" id="a-fazer">
+            <h2>A Fazer</h2>
+        </section>
+        <section class="task-column" id="fazendo">
+            <h2>Fazendo</h2>
+        </section>
+        <section class="task-column" id="pronto">
+            <h2>Pronto</h2>
+        </section>
+    </main>
+    <script>
+        function carregarTarefas() {
+            const tarefas = JSON.parse(localStorage.getItem('tarefas')) || [];
+
+            document.getElementById('a-fazer').innerHTML = '<h2>A Fazer</h2>';
+            document.getElementById('fazendo').innerHTML = '<h2>Fazendo</h2>';
+            document.getElementById('pronto').innerHTML = '<h2>Pronto</h2>';
+
+            tarefas.forEach(tarefa => {
+                const div = document.createElement('div');
+                div.className = 'task';
+                div.innerHTML = `
+                    <p><strong>Descrição:</strong> ${tarefa.description}</p>
+                    <p><strong>Setor:</strong> ${tarefa.sector}</p>
+                    <p><strong>Prioridade:</strong> ${tarefa.priority}</p>
+                    <p><strong>Usuário:</strong> ${tarefa.userEmail}</p>
+                    <button onclick="editarTarefa(${tarefa.id})">Editar</button>
+                    <button onclick="excluirTarefa(${tarefa.id})">Excluir</button>
+                    <p><strong>Alterar status:</strong></p>
+                    <button onclick="alterarStatus(${tarefa.id}, 'A fazer')">A Fazer</button>
+                    <button onclick="alterarStatus(${tarefa.id}, 'Fazendo')">Fazendo</button>
+                    <button onclick="alterarStatus(${tarefa.id}, 'Pronto')">Pronto</button>
+                `;
+                if (tarefa.status === 'A fazer') {
+                    document.getElementById('a-fazer').appendChild(div);
+                } else if (tarefa.status === 'Fazendo') {
+                    document.getElementById('fazendo').appendChild(div);
+                } else if (tarefa.status === 'Pronto') {
+                    document.getElementById('pronto').appendChild(div);
+                }
+            });
+        }
+
+        function alterarStatus(id, status) {
+            const tarefas = JSON.parse(localStorage.getItem('tarefas')) || [];
+            const tarefa = tarefas.find(t => t.id === id);
+            if (tarefa) {
+                tarefa.status = status;
+                localStorage.setItem('tarefas', JSON.stringify(tarefas));
+                carregarTarefas();
+            }
+        }
+
+        function excluirTarefa(id) {
+            let tarefas = JSON.parse(localStorage.getItem('tarefas')) || [];
+            tarefas = tarefas.filter(t => t.id !== id);
+            localStorage.setItem('tarefas', JSON.stringify(tarefas));
+            carregarTarefas();
+        }
+
+        function editarTarefa(id) {
+            const tarefas = JSON.parse(localStorage.getItem('tarefas')) || [];
+            const tarefa = tarefas.find(t => t.id === id);
+            if (!tarefa) {
+                alert('Tarefa não encontrada para edição.');
+                return;
+            }
+
+            const params = new URLSearchParams();
+            params.append('id', tarefa.id);
+            params.append('description', tarefa.description);
+            params.append('sector', tarefa.sector);
+            params.append('priority', tarefa.priority);
+            params.append('userEmail', tarefa.userEmail);
+            params.append('status', tarefa.status);
+o
+            window.location.href = 'index2.html?' + params.toString();
+        }
+
+        window.addEventListener('DOMContentLoaded', carregarTarefas);
+    </script>
+</body>
+</html>

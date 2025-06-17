@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cadastro de Tarefas</title>
+    <link rel="stylesheet" href="styles1.css" />
+</head>
+<body>
+    <header>
+        <h1>Gerenciamento de Tarefas</h1>
+        <nav>
+            <ul>
+                <a href="index.html">Cadastro de Usuários</a>
+                <a href="index2.html">Cadastro de Tarefas</a>
+                <a href="index3.html">Gerenciar Tarefas</a>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <h2 id="form-title">Cadastro de Tarefas</h2>
+        <form id="cadastro-tarefa">
+            <input type="hidden" id="tarefa-id" />
+            <label for="descricao">Descrição:</label>
+            <input type="text" id="descricao" name="descricao" required />
+
+            <label for="setor">Setor:</label>
+            <input type="text" id="setor" name="setor" required />
+
+            <label for="prioridade">Prioridade:</label>
+            <select id="prioridade" name="prioridade" required>
+                <option value="Baixa">Baixa</option>
+                <option value="Média">Média</option>
+                <option value="Alta">Alta</option>
+            </select>
+
+            <label for="usuario">Usuário:</label>
+            <select id="usuario" name="usuario" required></select>
+
+            <button type="submit" id="btn-submit">Cadastrar Tarefa</button>
+        </form>
+    </main>
+    <script>
+        function carregarUsuariosLocalStorage() {
+            const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+            const selectUsuario = document.getElementById('usuario');
+            selectUsuario.innerHTML = '';
+            if (usuarios.length === 0) {
+                const opt = document.createElement('option');
+                opt.textContent = 'Nenhum usuário cadastrado';
+                opt.disabled = true;
+                opt.selected = true;
+                selectUsuario.appendChild(opt);
+                return;
+            }
+            usuarios.forEach(usuario => {
+                const opt = document.createElement('option');
+                opt.value = usuario.email;
+                opt.textContent = usuario.nome;
+                selectUsuario.appendChild(opt);
+            });
+        }
+
+
+        function preencherFormularioSeEditar() {
+            const params = new URLSearchParams(window.location.search);
+            if (!params.has('id')) {
+                return; 
+            }
+            document.getElementById('form-title').textContent = 'Editar Tarefa';
+            document.getElementById('btn-submit').textContent = 'Salvar Alterações';
+
+            document.getElementById('tarefa-id').value = params.get('id');
+            document.getElementById('descricao').value = params.get('description') || '';
+            document.getElementById('setor').value = params.get('sector') || '';
+            document.getElementById('prioridade').value = params.get('priority') || 'Baixa';
+            document.getElementById('usuario').value = params.get('userEmail') || '';
+        }
+
+        document.getElementById('cadastro-tarefa').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const idCampo = document.getElementById('tarefa-id').value;
+            const description = document.getElementById('descricao').value.trim();
+            const sector = document.getElementById('setor').value.trim();
+            const priority = document.getElementById('prioridade').value;
+            const userEmail = document.getElementById('usuario').value;
+            const status = 'A fazer';
+
+            let tarefas = JSON.parse(localStorage.getItem('tarefas')) || [];
+
+            if (idCampo) {
+                const idNum = Number(idCampo);
+                tarefas = tarefas.map(t => {
+                    if (t.id === idNum) {
+                        return {
+                            ...t,
+                            description,
+                            sector,
+                            priority,
+                            userEmail,
+                            status: t.status || 'A fazer'
+                        };
+                    }
+                    return t;
+                });
+                localStorage.setItem('tarefas', JSON.stringify(tarefas));
+                alert('Tarefa atualizada com sucesso!');
+                history.replaceState(null, '', 'index2.html');
+            } else {
+                const tarefa = {
+                    id: Date.now(),
+                    description,
+                    sector,
+                    priority,
+                    userEmail,
+                    status
+                };
+                tarefas.push(tarefa);
+                localStorage.setItem('tarefas', JSON.stringify(tarefas));
+                alert('Tarefa cadastrada com sucesso!');
+            }
+
+            this.reset();
+            document.getElementById('form-title').textContent = 'Cadastro de Tarefas';
+            document.getElementById('btn-submit').textContent = 'Cadastrar Tarefa';
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            carregarUsuariosLocalStorage();
+            preencherFormularioSeEditar();
+        });
+    </script>
+</body>
+</html>
